@@ -32,6 +32,8 @@ public class Event {
 	private LocalDateTime startsAt;
 	private LocalDateTime endsAt;
 	private String imageUrl;
+	private Double latitude;
+	private Double longitude;
 
 	@OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<TicketType> ticketTypes = new ArrayList<>();
@@ -109,6 +111,22 @@ public class Event {
 
 	public void setImageUrl(String imageUrl) {
 		this.imageUrl = imageUrl;
+	}
+
+	public Double getLatitude() {
+		return latitude;
+	}
+
+	public void setLatitude(Double latitude) {
+		this.latitude = latitude;
+	}
+
+	public Double getLongitude() {
+		return longitude;
+	}
+
+	public void setLongitude(Double longitude) {
+		this.longitude = longitude;
 	}
 
 	public List<TicketType> getTicketTypes() {

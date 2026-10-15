@@ -39,6 +39,8 @@ class EventControllerTest {
 		event.setStartsAt(LocalDateTime.parse("2026-07-10T12:00:00"));
 		event.setEndsAt(LocalDateTime.parse("2026-07-10T22:00:00"));
 		event.setImageUrl("https://example.com/festival.jpg");
+		event.setLatitude(40.0);
+		event.setLongitude(-73.0);
 		TicketType general = new TicketType();
 		general.setId(7L);
 		general.setName("General");
@@ -60,8 +62,30 @@ class EventControllerTest {
 				.andExpect(jsonPath("$.startsAt").value("2026-07-10T12:00:00"))
 				.andExpect(jsonPath("$.endsAt").value("2026-07-10T22:00:00"))
 				.andExpect(jsonPath("$.imageUrl").value("https://example.com/festival.jpg"))
+				.andExpect(jsonPath("$.latitude").value(40.0))
+				.andExpect(jsonPath("$.longitude").value(-73.0))
 				.andExpect(jsonPath("$.ticketTypes[0].name").value("General"))
 				.andExpect(jsonPath("$.ticketTypes[0].price").value(50.0))
 				.andExpect(jsonPath("$.ticketTypes[0].ticketsRemaining").value(35));
+	}
+
+	@Test
+	void returnsNearbyEventsForCustomerLocation() throws Exception {
+		Event nearby = new Event();
+		nearby.setId(51L);
+		nearby.setTitle("Nearby Show");
+		nearby.setVenue("Local Hall");
+		nearby.setLatitude(40.01);
+		nearby.setLongitude(-73.0);
+		when(eventRepository.findAll()).thenReturn(List.of(nearby));
+
+		mockMvc.perform(get("/api/events/nearby")
+					.param("latitude", "40.0")
+					.param("longitude", "-73.0")
+					.with(user("customer")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$[0].id").value(51))
+				.andExpect(jsonPath("$[0].title").value("Nearby Show"))
+				.andExpect(jsonPath("$[0].distanceKm").value(1.11));
 	}
 }

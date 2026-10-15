@@ -43,6 +43,34 @@ class EventServiceTest {
 	}
 
 	@Test
+	void returnsNearbyEventsWithinRadiusInNearestFirstOrder() {
+		EventRepository eventRepository = mock(EventRepository.class);
+		Event nearby = event(1L, "Nearby", 40.01, -73.0);
+		Event farther = event(2L, "Farther", 40.1, -73.0);
+		Event outsideRadius = event(3L, "Outside", 41.0, -73.0);
+		Event withoutLocation = event(4L, "No coordinates", null, null);
+		when(eventRepository.findAll()).thenReturn(List.of(farther, outsideRadius, withoutLocation, nearby));
+
+		List<NearbyEvent> results = new EventService(eventRepository).getNearby(40.0, -73.0, 20);
+
+		assertEquals(List.of(1L, 2L), results.stream().map(NearbyEvent::id).toList());
+		assertEquals("Nearby", results.get(0).title());
+		assertEquals(1.11, results.get(0).distanceKm(), 0.02);
+		assertEquals(8.0, results.get(1).distanceKm(), 0.1);
+	}
+
+	@Test
+	void rejectsInvalidCustomerCoordinates() {
+		EventRepository eventRepository = mock(EventRepository.class);
+
+		ResponseStatusException exception = assertThrows(
+				ResponseStatusException.class,
+				() -> new EventService(eventRepository).getNearby(91, 0, 50));
+
+		assertEquals(400, exception.getStatusCode().value());
+	}
+
+	@Test
 	void returnsNotFoundWhenEventDoesNotExist() {
 		EventRepository eventRepository = mock(EventRepository.class);
 		when(eventRepository.findWithTicketTypesById(404L)).thenReturn(Optional.empty());
@@ -63,5 +91,14 @@ class EventServiceTest {
 		ticketType.setTotalQuantity(total);
 		ticketType.setSoldQuantity(sold);
 		return ticketType;
+	}
+
+	private Event event(Long id, String title, Double latitude, Double longitude) {
+		Event event = new Event();
+		event.setId(id);
+		event.setTitle(title);
+		event.setLatitude(latitude);
+		event.setLongitude(longitude);
+		return event;
 	}
 }

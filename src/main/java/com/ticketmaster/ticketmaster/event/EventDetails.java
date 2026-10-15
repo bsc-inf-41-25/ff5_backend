@@ -14,6 +14,8 @@ public record EventDetails(
 		LocalDateTime startsAt,
 		LocalDateTime endsAt,
 		String imageUrl,
+		Double latitude,
+		Double longitude,
 		List<TicketTypeDetails> ticketTypes) {
 
 	public record TicketTypeDetails(
