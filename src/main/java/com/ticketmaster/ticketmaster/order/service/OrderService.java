@@ -26,26 +26,23 @@ public class OrderService {
 
     @Transactional
     public OrderResponse placeOrder(PlaceOrderRequest request) {
-        // 1. Get current logged in user
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        // 2. Build the Order
         Order order = Order.builder()
                 .user(user)
                 .eventId(request.getEventId())
                 .status(Order.OrderStatus.PENDING)
-                .totalAmount(BigDecimal.ZERO) // Will calculate below
+                .totalAmount(BigDecimal.ZERO)
                 .build();
 
         BigDecimal totalAmount = BigDecimal.ZERO;
 
         for (PlaceOrderRequest.ItemRequest itemReq : request.getItems()) {
-            // TODO: Call Ian's reserveCapacity(itemReq.getTicketTypeId(), itemReq.getQuantity())
-            // TODO: Call Ian's getTicketType(itemReq.getTicketTypeId()) to get the real price
-
-            // For now, we use a dummy price (e.g., 50.00) until Ian's code is ready
+            // TODO: Replace with Ian's TicketTypeRepository when his Task 4 is ready
+            
+            // Placeholder dummy price
             BigDecimal unitPrice = new BigDecimal("50.00"); 
 
             OrderItem orderItem = OrderItem.builder()
@@ -57,20 +54,17 @@ public class OrderService {
 
             order.getItems().add(orderItem);
 
-            // Add to total: unitPrice * quantity
             BigDecimal itemTotal = unitPrice.multiply(new BigDecimal(itemReq.getQuantity()));
             totalAmount = totalAmount.add(itemTotal);
         }
 
         order.setTotalAmount(totalAmount);
 
-        // 3. Save to database
         Order savedOrder = orderRepository.save(order);
 
         return mapToResponse(savedOrder);
     }
 
-    // Helper to convert Entity to DTO
     private OrderResponse mapToResponse(Order order) {
         List<OrderItemResponse> itemResponses = order.getItems().stream()
                 .map(item -> OrderItemResponse.builder()
