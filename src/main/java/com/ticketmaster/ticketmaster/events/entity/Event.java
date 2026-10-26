@@ -12,6 +12,11 @@ public class Event {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Foreign key referencing users.id
+
+    @Column(name = "organizer_id")
+    private Long organizerId;
+
     @Column(nullable = false, length = 200)
     private String title;
 
@@ -21,23 +26,56 @@ public class Event {
     @Column(nullable = false, length = 300)
     private String location;
 
-    @Column(nullable = false)
+    // Existing database column
+    @Column(name = "date_time", nullable = false)
     private LocalDateTime dateTime;
 
-    @Column(nullable = false)
+    @Column(name = "start_time", nullable = false)
+    private LocalDateTime startTime;
+
+    @Column(name = "end_time", nullable = false)
+    private LocalDateTime endTime;
+
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private EventStatus status = EventStatus.DRAFT;
 
-    // Identifies the organizer who created this event.
-    // This will be matched against the logged-in user.
-    @Column(nullable = false, length = 100)
+    // Used by the existing event ownership checks
+    @Column(name = "organizer_username", nullable = false, length = 100)
     private String organizerUsername;
 
     public Event() {
     }
 
+    // Validate and synchronize required date/time fields before saving
+    @PrePersist
+    @PreUpdate
+    public void validateAndSynchronizeTimes() {
+        if (startTime != null) {
+            dateTime = startTime;
+        }
+
+        if (startTime == null || endTime == null) {
+            throw new IllegalStateException(
+                    "Event start time and end time are required");
+        }
+
+        if (!endTime.isAfter(startTime)) {
+            throw new IllegalStateException(
+                    "Event end time must be after start time");
+        }
+    }
+
     public Long getId() {
         return id;
+    }
+
+    public Long getOrganizerId() {
+        return organizerId;
+    }
+
+    public void setOrganizerId(Long organizerId) {
+        this.organizerId = organizerId;
     }
 
     public String getTitle() {
@@ -70,6 +108,23 @@ public class Event {
 
     public void setDateTime(LocalDateTime dateTime) {
         this.dateTime = dateTime;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+        this.dateTime = startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
     }
 
     public EventStatus getStatus() {

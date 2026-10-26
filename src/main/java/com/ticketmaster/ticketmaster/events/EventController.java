@@ -1,8 +1,8 @@
 
-package com.ticketmaster.ticketmaster.events.controller;
+package com.ticketmaster.ticketmaster.events;
 
 import com.ticketmaster.ticketmaster.events.entity.Event;
-import com.ticketmaster.ticketmaster.events.service.EventService;
+import com.ticketmaster.ticketmaster.events.entity.EventService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
