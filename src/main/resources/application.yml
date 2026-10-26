@@ -30,3 +30,6 @@ springdoc:
 logging:
   level:
     org.springframework.security: DEBUG
+
+google:
+  client-id: dummy-client-id-for-now.apps.googleusercontent.com

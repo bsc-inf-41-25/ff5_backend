@@ -1,6 +1,7 @@
 package com.ticketmaster.ticketmaster.user.controller;
 
 import com.ticketmaster.ticketmaster.user.dto.AuthResponse;
+import com.ticketmaster.ticketmaster.user.dto.GoogleLoginRequest;
 import com.ticketmaster.ticketmaster.user.dto.LoginRequest;
 import com.ticketmaster.ticketmaster.user.dto.RegisterRequest;
 import com.ticketmaster.ticketmaster.user.service.UserService;
@@ -32,5 +33,11 @@ public class AuthController {
     @Operation(summary = "Login and receive a JWT")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(userService.login(request));
+    }
+
+        @PostMapping("/google")
+    @Operation(summary = "Login with Google ID Token")
+    public ResponseEntity<AuthResponse> googleLogin(@Valid @RequestBody GoogleLoginRequest request) {
+        return ResponseEntity.ok(userService.googleLogin(request.getIdToken()));
     }
 }
