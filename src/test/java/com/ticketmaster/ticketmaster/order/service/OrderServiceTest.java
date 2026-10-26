@@ -4,6 +4,7 @@ import com.ticketmaster.ticketmaster.order.dto.OrderResponse;
 import com.ticketmaster.ticketmaster.order.dto.PlaceOrderRequest;
 import com.ticketmaster.ticketmaster.order.entity.Order;
 import com.ticketmaster.ticketmaster.order.repository.OrderRepository;
+import com.ticketmaster.ticketmaster.order.service.OrderService;
 import com.ticketmaster.ticketmaster.user.entity.User;
 import com.ticketmaster.ticketmaster.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
