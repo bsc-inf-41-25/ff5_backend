@@ -1,0 +1,28 @@
+### Register a customer
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "customer@test.com",
+  "password": "password123",
+  "role": "CUSTOMER"
+}
+
+### Register an organizer
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "organizer@test.com",
+  "password": "password123",
+  "role": "ORGANIZER"
+}
+
+### Login
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "customer@test.com",
+  "password": "password123"
+}
