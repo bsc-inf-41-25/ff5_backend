@@ -93,7 +93,7 @@ public class EventService {
 				event.getImageUrl(),
 				event.getLatitude(),
 				event.getLongitude(),
-				distanceKm);
+                             Math.round(distanceKm * 100.0) / 100.0);
 	}
 
 	private record NearbyEventDistance(Event event, double distanceKm) {

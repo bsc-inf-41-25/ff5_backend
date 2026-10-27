@@ -1,16 +1,16 @@
 package com.ticketmaster.ticketmaster.service;
 
 import com.ticketmaster.ticketmaster.entity.Event;
-import com.ticketmaster.ticketmaster.repository.EventRepository;
+import com.ticketmaster.ticketmaster.repository.LegacyEventRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Service
+@Service("legacyEventService")
 public class EventService {
     @Autowired
-    private EventRepository eventRepository;
+    private LegacyEventRepository eventRepository;
 
     public List<Event> searchEvents(String keyword, String category, String location, LocalDateTime startDate, LocalDateTime endDate) {
         if(keyword != null && keyword.isEmpty()) keyword = null;

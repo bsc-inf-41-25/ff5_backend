@@ -1,3 +1,4 @@
+
 package com.ticketmaster.ticketmaster.ticket;
 
 import com.ticketmaster.ticketmaster.ticket.dto.TicketResponse;
@@ -5,8 +6,12 @@ import com.ticketmaster.ticketmaster.user.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -16,12 +21,18 @@ public class TicketController {
 
     private final TicketQueryService ticketQueryService;
     private final UserRepository userRepository;
+    private final TicketRepository ticketRepository;
+    private final QrCodeService qrCodeService;
 
     public TicketController(
             TicketQueryService ticketQueryService,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            TicketRepository ticketRepository,
+            QrCodeService qrCodeService) {
         this.ticketQueryService = ticketQueryService;
         this.userRepository = userRepository;
+        this.ticketRepository = ticketRepository;
+        this.qrCodeService = qrCodeService;
     }
 
     @GetMapping("/my")
@@ -50,6 +61,38 @@ public class TicketController {
             Authentication authentication) {
         Long ownerId = getCurrentUserId(authentication);
         return ticketQueryService.getMyTicketById(id, ownerId);
+    }
+
+    @GetMapping(value = "/{id}/qr", produces = MediaType.IMAGE_PNG_VALUE)
+    @Operation(summary = "Get ticket QR code",
+            description = "Returns a PNG QR code containing the ticket code. Only the ticket owner can access it.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "QR code generated successfully"),
+            @ApiResponse(responseCode = "401", description = "Authentication required"),
+            @ApiResponse(responseCode = "403", description = "Ticket belongs to another customer"),
+            @ApiResponse(responseCode = "404", description = "Ticket not found")
+    })
+    public ResponseEntity<byte[]> getTicketQrCode(
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        Ticket ticket = ticketRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Ticket not found."));
+
+        Long ownerId = getCurrentUserId(authentication);
+
+        if (!ownerId.equals(ticket.getOwnerId())) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "This ticket belongs to another customer.");
+        }
+
+        byte[] png = qrCodeService.generateQrCode(ticket.getTicketCode());
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_PNG)
+                .body(png);
     }
 
     private Long getCurrentUserId(Authentication authentication) {

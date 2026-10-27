@@ -3,7 +3,7 @@ package com.ticketmaster.ticketmaster.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-@Entity
+@Entity(name = "LegacyEvent")
 @Table(name = "events")
 public class Event {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

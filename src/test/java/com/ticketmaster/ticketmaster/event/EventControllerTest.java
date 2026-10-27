@@ -18,14 +18,24 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.ticketmaster.ticketmaster.security.JwtService;
+import com.ticketmaster.ticketmaster.security.CustomUserDetailsService;
+
 @WebMvcTest(EventController.class)
 @Import(EventService.class)
 class EventControllerTest {
 	@Autowired
 	private MockMvc mockMvc;
 
+	
 	@MockBean
-	private EventRepository eventRepository;
+    private EventRepository eventRepository;
+
+    @MockBean
+    private JwtService jwtService;
+
+    @MockBean
+    private CustomUserDetailsService customUserDetailsService;
 
 	@Test
 	void returnsFullEventDetailsAndTicketAvailability() throws Exception {

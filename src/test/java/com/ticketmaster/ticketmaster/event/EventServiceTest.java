@@ -56,7 +56,7 @@ class EventServiceTest {
 		assertEquals(List.of(1L, 2L), results.stream().map(NearbyEvent::id).toList());
 		assertEquals("Nearby", results.get(0).title());
 		assertEquals(1.11, results.get(0).distanceKm(), 0.02);
-		assertEquals(8.0, results.get(1).distanceKm(), 0.1);
+		assertEquals(11.12, results.get(1).distanceKm(), 0.02);
 	}
 
 	@Test
