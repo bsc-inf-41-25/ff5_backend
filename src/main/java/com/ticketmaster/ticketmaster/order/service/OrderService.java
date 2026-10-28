@@ -136,15 +136,11 @@ public class OrderService {
             order.setStatus(Order.OrderStatus.PAID);
             
             // TODO: Call Mike's issueTickets(order) here once his module is merged
-            // ticketService.issueTickets(order);
             
         } else if (newStatus == Order.OrderStatus.FAILED || newStatus == Order.OrderStatus.CANCELLED) {
             order.setStatus(newStatus);
             
             // TODO: Call Ian's releaseCapacity here once his module is merged
-            // for (OrderItem item : order.getItems()) {
-            //     eventService.releaseCapacity(item.getTicketTypeId(), item.getQuantity());
-            // }
         }
 
         orderRepository.save(order);
@@ -171,5 +167,4 @@ public class OrderService {
 
         return mapToResponse(order);
     }
-
 }

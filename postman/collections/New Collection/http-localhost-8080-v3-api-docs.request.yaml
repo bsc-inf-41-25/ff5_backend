@@ -1,0 +1,26 @@
+$kind: http-request
+name: http://localhost:8080/v3/api-docs
+description: ""
+url: http://localhost:8080/events
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"title\": \"Lilongwe Music Festival 2026\",\r
+
+    \  \"venue\": \"BICC\",\r
+
+    \  \"location\": \"Lilongwe\",\r
+
+    \  \"startTime\": \"2026-12-15T18:00:00\",\r
+
+    \  \"endTime\": \"2026-12-15T23:59:00\"\r
+
+    }"
+auth:
+  type: basic
+  credentials:
+    username: ian
+    password: ian123
+order: 1000
