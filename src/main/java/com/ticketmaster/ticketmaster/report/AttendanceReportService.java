@@ -1,0 +1,39 @@
+package com.ticketmaster.ticketmaster.report;
+
+import com.ticketmaster.ticketmaster.ticket.TicketRepository;
+import com.ticketmaster.ticketmaster.ticket.TicketStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class AttendanceReportService {
+
+    private final TicketRepository ticketRepository;
+
+    public AttendanceReportService(TicketRepository ticketRepository) {
+        this.ticketRepository = ticketRepository;
+    }
+
+    @Transactional(readOnly = true)
+    public AttendanceReportResponse getAttendanceReport(Long eventId) {
+        if (eventId == null || eventId <= 0) {
+            throw new IllegalArgumentException(
+                    "A valid event ID is required"
+            );
+        }
+
+        long ticketsSold = ticketRepository.countByEvent_Id(eventId);
+
+        long peopleCheckedIn =
+                ticketRepository.countByEvent_IdAndStatus(
+                        eventId,
+                        TicketStatus.USED
+                );
+
+        return new AttendanceReportResponse(
+                eventId,
+                ticketsSold,
+                peopleCheckedIn
+        );
+    }
+}
