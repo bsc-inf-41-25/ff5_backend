@@ -1,0 +1,15 @@
+services:
+  mariadb:
+    image: mariadb:11.4
+    container_name: ticketmaster-db
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: ticketmaster
+    ports:
+      - "3306:3306"
+    volumes:
+      - ticketmaster_data:/var/lib/mysql
+
+volumes:
+  ticketmaster_data:
