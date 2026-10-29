@@ -124,6 +124,7 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
 
+        // Security check: Only the owner can view the order
         if (!order.getUser().getEmail().equals(email)) {
             throw new SecurityException("You are not authorized to view this order");
         }
@@ -136,14 +137,17 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
 
+        // 1. Idempotency: If the status is already the same, do nothing.
         if (order.getStatus() == newStatus) {
             return;
         }
 
+        // 2. State Transition validation
         if (order.getStatus() == Order.OrderStatus.PAID || order.getStatus() == Order.OrderStatus.CANCELLED) {
             throw new IllegalStateException("Cannot change status of a " + order.getStatus() + " order.");
         }
 
+        // 3. Handle the new status
         if (newStatus == Order.OrderStatus.PAID) {
             order.setStatus(Order.OrderStatus.PAID);
             
@@ -176,14 +180,17 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
 
+        // 1. Security check: Only the owner can cancel
         if (!order.getUser().getEmail().equals(email)) {
             throw new SecurityException("You are not authorized to cancel this order");
         }
 
+        // 2. State check: Only PENDING orders can be cancelled
         if (order.getStatus() != Order.OrderStatus.PENDING) {
             throw new IllegalStateException("Only PENDING orders can be cancelled");
         }
 
+        // 3. Update status
         updateOrderStatus(orderId, Order.OrderStatus.CANCELLED);
 
         return mapToResponse(order);
