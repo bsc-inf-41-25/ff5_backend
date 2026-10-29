@@ -1,5 +1,7 @@
 package com.ticketmaster.ticketmaster.order.service;
 
+import com.ticketmaster.ticketmaster.events.entity.TicketType;
+import com.ticketmaster.ticketmaster.events.entity.TicketTypeRepository;
 import com.ticketmaster.ticketmaster.order.dto.OrderItemResponse;
 import com.ticketmaster.ticketmaster.order.dto.OrderResponse;
 import com.ticketmaster.ticketmaster.order.dto.PlaceOrderRequest;
@@ -23,10 +25,13 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
+    
+    // 1. Inject the TicketType repository to check capacity
+    private final TicketTypeRepository ticketTypeRepository;
 
     @Transactional
     public OrderResponse placeOrder(PlaceOrderRequest request) {
-        // Input Validation (Task 3 requirement)
+        // Input Validation
         if (request.getEventId() == null) {
             throw new IllegalArgumentException("Event ID cannot be null");
         }
@@ -48,10 +53,22 @@ public class OrderService {
         BigDecimal totalAmount = BigDecimal.ZERO;
 
         for (PlaceOrderRequest.ItemRequest itemReq : request.getItems()) {
-            // TODO: Replace with Ian's TicketTypeRepository when his Task 4 is ready
             
-            // Placeholder dummy price
-            BigDecimal unitPrice = new BigDecimal("50.00"); 
+            // 2. LOCK THE ROW & CHECK CAPACITY (Replaces Ian's CapacityService)
+            TicketType ticketType = ticketTypeRepository.findByIdForUpdate(itemReq.getTicketTypeId())
+                    .orElseThrow(() -> new IllegalArgumentException("Ticket type not found"));
+
+            int available = ticketType.getTotalQuantity() - ticketType.getQuantitySold();
+            if (available < itemReq.getQuantity()) {
+                throw new IllegalArgumentException("Not enough tickets available for: " + ticketType.getName());
+            }
+
+            // Deduct the capacity immediately
+            ticketType.setQuantitySold(ticketType.getQuantitySold() + itemReq.getQuantity());
+            ticketTypeRepository.save(ticketType);
+
+            // 3. Use the REAL price from the database
+            BigDecimal unitPrice = ticketType.getPrice();
 
             OrderItem orderItem = OrderItem.builder()
                     .order(order)
@@ -67,7 +84,6 @@ public class OrderService {
         }
 
         order.setTotalAmount(totalAmount);
-
         Order savedOrder = orderRepository.save(order);
 
         return mapToResponse(savedOrder);
@@ -136,15 +152,23 @@ public class OrderService {
             order.setStatus(Order.OrderStatus.PAID);
             
             // TODO: Call Mike's issueTickets(order) here once his module is merged
-            // ticketService.issueTickets(order);
             
         } else if (newStatus == Order.OrderStatus.FAILED || newStatus == Order.OrderStatus.CANCELLED) {
             order.setStatus(newStatus);
             
-            // TODO: Call Ian's releaseCapacity here once his module is merged
-            // for (OrderItem item : order.getItems()) {
-            //     eventService.releaseCapacity(item.getTicketTypeId(), item.getQuantity());
-            // }
+            // FIX: Force Hibernate to initialize the lazy-loaded collection
+            order.getItems().size(); 
+            
+            // 4. RELEASE CAPACITY (Give the tickets back)
+            for (OrderItem item : order.getItems()) {
+                TicketType ticketType = ticketTypeRepository.findByIdForUpdate(item.getTicketTypeId())
+                        .orElseThrow(() -> new IllegalArgumentException("Ticket type not found"));
+                
+                // Ensure we don't drop below zero
+                int newSold = ticketType.getQuantitySold() - item.getQuantity();
+                ticketType.setQuantitySold(Math.max(0, newSold));
+                ticketTypeRepository.save(ticketType);
+            }
         }
 
         orderRepository.save(order);
@@ -171,5 +195,4 @@ public class OrderService {
 
         return mapToResponse(order);
     }
-
 }

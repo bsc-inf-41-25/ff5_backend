@@ -1,0 +1,10 @@
+$kind: http-request
+description: ""
+url: ""
+method: GET
+auth:
+  type: basic
+  credentials:
+    username: ian
+    password: ian123
+order: 2000

@@ -1,0 +1,10 @@
+$kind: collection
+auth:
+  - id: eb5cf788-ecb4-4f52-9989-b21f0ff5826f
+    type: basic
+    name: Basic Auth
+    credentials:
+      username: ian
+      password: ian123
+    rules:
+      url: "*"
