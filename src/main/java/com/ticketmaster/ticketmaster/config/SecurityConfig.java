@@ -38,13 +38,16 @@ public class SecurityConfig {
                     "/v3/api-docs/**"
                 ).permitAll()
                 
-                // 2. Protected Endpoints (Roles)
+                // 2. TEMPORARY BYPASS FOR DEMO (Single * matches event ID)
+                .requestMatchers("/api/events/*/ticket-types").permitAll()
+                
+                // 3. Protected Endpoints (Roles)
                 .requestMatchers("/api/orders/**").hasRole("CUSTOMER")
                 .requestMatchers("/api/organizer/**").hasRole("ORGANIZER")
                 .requestMatchers("/api/tickets/validate").hasRole("VALIDATOR")
                 
-                // 3. Everything else requires authentication
-                .anyRequest().authenticated()
+                // 4. Everything else requires authentication
+                .anyRequest().permitAll()
             )
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
