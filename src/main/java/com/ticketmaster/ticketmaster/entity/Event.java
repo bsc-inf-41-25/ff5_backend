@@ -2,8 +2,6 @@ package com.ticketmaster.ticketmaster.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "events")
@@ -19,9 +17,6 @@ public class Event {
     private LocalDateTime eventDate;
     private Double minPrice;
     private Double maxPrice;
-
-    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<TicketType> ticketTypes = new ArrayList<>();
 
     public Long getId(){return id;}
     public void setId(Long id){this.id=id;}
@@ -43,13 +38,4 @@ public class Event {
     public void setMinPrice(Double p){this.minPrice=p;}
     public Double getMaxPrice(){return maxPrice;}
     public void setMaxPrice(Double p){this.maxPrice=p;}
-    public List<TicketType> getTicketTypes(){return ticketTypes;}
-    public void setTicketTypes(List<TicketType> types){
-        ticketTypes.clear();
-        if(types != null) types.forEach(this::addTicketType);
-    }
-    public void addTicketType(TicketType type){
-        type.setEvent(this);
-        ticketTypes.add(type);
-    }
 }

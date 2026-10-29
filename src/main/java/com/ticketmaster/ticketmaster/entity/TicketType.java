@@ -9,6 +9,7 @@ public class TicketType {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
     private String name;
     private Double price;
     private Integer totalQuantity;
@@ -29,9 +30,6 @@ public class TicketType {
     public void setTotalQuantity(Integer totalQuantity) { this.totalQuantity = totalQuantity; }
     public Integer getSoldQuantity() { return soldQuantity; }
     public void setSoldQuantity(Integer soldQuantity) { this.soldQuantity = soldQuantity; }
-    public Integer getTicketsRemaining() {
-        return totalQuantity == null ? null : Math.max(0, totalQuantity - (soldQuantity == null ? 0 : soldQuantity));
-    }
     public Event getEvent() { return event; }
     public void setEvent(Event event) { this.event = event; }
 }
