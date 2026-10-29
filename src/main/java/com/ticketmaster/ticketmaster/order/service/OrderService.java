@@ -25,10 +25,13 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
+    
+    // 1. Inject the TicketType repository to check capacity
     private final TicketTypeRepository ticketTypeRepository;
 
     @Transactional
     public OrderResponse placeOrder(PlaceOrderRequest request) {
+        // Input Validation
         if (request.getEventId() == null) {
             throw new IllegalArgumentException("Event ID cannot be null");
         }
@@ -51,6 +54,7 @@ public class OrderService {
 
         for (PlaceOrderRequest.ItemRequest itemReq : request.getItems()) {
             
+            // 2. LOCK THE ROW & CHECK CAPACITY (Replaces Ian's CapacityService)
             TicketType ticketType = ticketTypeRepository.findByIdWithLock(itemReq.getTicketTypeId())
                     .orElseThrow(() -> new IllegalArgumentException("Ticket type not found"));
 
@@ -59,9 +63,11 @@ public class OrderService {
                 throw new IllegalArgumentException("Not enough tickets available for: " + ticketType.getName());
             }
 
+            // Deduct the capacity immediately
             ticketType.setSoldQuantity(ticketType.getSoldQuantity() + itemReq.getQuantity());
             ticketTypeRepository.save(ticketType);
 
+            // 3. Use the REAL price from the database
             BigDecimal unitPrice = BigDecimal.valueOf(ticketType.getPrice());
 
             OrderItem orderItem = OrderItem.builder()
@@ -140,15 +146,21 @@ public class OrderService {
 
         if (newStatus == Order.OrderStatus.PAID) {
             order.setStatus(Order.OrderStatus.PAID);
+            
             // TODO: Call Mike's issueTickets(order) here once his module is merged
+            
         } else if (newStatus == Order.OrderStatus.FAILED || newStatus == Order.OrderStatus.CANCELLED) {
             order.setStatus(newStatus);
+            
+            // FIX: Force Hibernate to initialize the lazy-loaded collection
             order.getItems().size(); 
             
+            // 4. RELEASE CAPACITY (Give the tickets back)
             for (OrderItem item : order.getItems()) {
                 TicketType ticketType = ticketTypeRepository.findByIdWithLock(item.getTicketTypeId())
                         .orElseThrow(() -> new IllegalArgumentException("Ticket type not found"));
                 
+                // Ensure we don't drop below zero
                 int newSold = ticketType.getSoldQuantity() - item.getQuantity();
                 ticketType.setSoldQuantity(Math.max(0, newSold));
                 ticketTypeRepository.save(ticketType);

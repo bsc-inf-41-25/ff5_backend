@@ -3,21 +3,33 @@ spring:
     name: ticketmaster
 
   datasource:
-    url: "jdbc:mariadb://127.0.0.1:3307/ticketmaster"
-    username: ticketmaster_app
-    password: 'ticket2026'
+    url: jdbc:mariadb://localhost:3306/ticketmaster
+    username: root
+    password: root
     driver-class-name: org.mariadb.jdbc.Driver
 
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
-
-  security:
-    user:
-      name: ian
-      password: ian123
-      roles: ORGANIZER
+    properties:
+      hibernate:
+        format_sql: true
 
 server:
   port: 8080
+
+jwt:
+  secret: ThisIsAVeryLongSecretKeyForJWTTokenGenerationChangeInProduction1234567890
+  expiration: 86400000
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+
+google:
+  client-id: dummy-client-id-for-now.apps.googleusercontent.com
