@@ -9,11 +9,11 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/events")
-public class EventController {
+@RequestMapping("/api/event-details")
+public class EventDetailsController {
 	private final EventService eventService;
 
-	public EventController(EventService eventService) {
+	public EventDetailsController(EventService eventService) {
 		this.eventService = eventService;
 	}
 

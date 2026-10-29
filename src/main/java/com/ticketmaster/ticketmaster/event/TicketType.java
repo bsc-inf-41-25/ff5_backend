@@ -12,7 +12,7 @@ import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
 
-@Entity
+@Entity(name = "EventTicketType")
 @Table(name = "ticket_types")
 public class TicketType {
 	@Id

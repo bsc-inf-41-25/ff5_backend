@@ -8,13 +8,13 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Comparator;
 import java.util.List;
 
-@Service
+@Service("eventDetailsService")
 public class EventService {
 	private static final double EARTH_RADIUS_KM = 6371.0088;
 
-	private final EventRepository eventRepository;
+	private final EventDetailsRepository eventRepository;
 
-	public EventService(EventRepository eventRepository) {
+	public EventService(EventDetailsRepository eventRepository) {
 		this.eventRepository = eventRepository;
 	}
 

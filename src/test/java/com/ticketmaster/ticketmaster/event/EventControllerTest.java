@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.ticketmaster.ticketmaster.security.JwtService;
 import com.ticketmaster.ticketmaster.security.CustomUserDetailsService;
 
-@WebMvcTest(EventController.class)
+@WebMvcTest(EventDetailsController.class)
 @Import(EventService.class)
 class EventControllerTest {
 	@Autowired
@@ -29,7 +29,7 @@ class EventControllerTest {
 
 	
 	@MockBean
-    private EventRepository eventRepository;
+    private EventDetailsRepository eventRepository;
 
     @MockBean
     private JwtService jwtService;
@@ -61,7 +61,7 @@ class EventControllerTest {
 		event.setTicketTypes(List.of(general));
 		when(eventRepository.findWithTicketTypesById(42L)).thenReturn(Optional.of(event));
 
-		mockMvc.perform(get("/api/events/42").with(user("customer")))
+		mockMvc.perform(get("/api/event-details/42").with(user("customer")))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(42))
 				.andExpect(jsonPath("$.title").value("Summer Festival"))
@@ -89,7 +89,7 @@ class EventControllerTest {
 		nearby.setLongitude(-73.0);
 		when(eventRepository.findAll()).thenReturn(List.of(nearby));
 
-		mockMvc.perform(get("/api/events/nearby")
+		mockMvc.perform(get("/api/event-details/nearby")
 					.param("latitude", "40.0")
 					.param("longitude", "-73.0")
 					.with(user("customer")))

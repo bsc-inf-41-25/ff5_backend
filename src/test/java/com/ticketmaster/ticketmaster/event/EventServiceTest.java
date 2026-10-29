@@ -16,7 +16,7 @@ import static org.mockito.Mockito.when;
 class EventServiceTest {
 	@Test
 	void returnsEventDetailsAndTicketsRemainingForEveryTicketType() {
-		EventRepository eventRepository = mock(EventRepository.class);
+		EventDetailsRepository eventRepository = mock(EventDetailsRepository.class);
 		Event event = new Event();
 		event.setId(42L);
 		event.setTitle("Summer Festival");
@@ -44,7 +44,7 @@ class EventServiceTest {
 
 	@Test
 	void returnsNearbyEventsWithinRadiusInNearestFirstOrder() {
-		EventRepository eventRepository = mock(EventRepository.class);
+		EventDetailsRepository eventRepository = mock(EventDetailsRepository.class);
 		Event nearby = event(1L, "Nearby", 40.01, -73.0);
 		Event farther = event(2L, "Farther", 40.1, -73.0);
 		Event outsideRadius = event(3L, "Outside", 41.0, -73.0);
@@ -61,7 +61,7 @@ class EventServiceTest {
 
 	@Test
 	void rejectsInvalidCustomerCoordinates() {
-		EventRepository eventRepository = mock(EventRepository.class);
+		EventDetailsRepository eventRepository = mock(EventDetailsRepository.class);
 
 		ResponseStatusException exception = assertThrows(
 				ResponseStatusException.class,
@@ -72,7 +72,7 @@ class EventServiceTest {
 
 	@Test
 	void returnsNotFoundWhenEventDoesNotExist() {
-		EventRepository eventRepository = mock(EventRepository.class);
+		EventDetailsRepository eventRepository = mock(EventDetailsRepository.class);
 		when(eventRepository.findWithTicketTypesById(404L)).thenReturn(Optional.empty());
 
 		ResponseStatusException exception = assertThrows(
