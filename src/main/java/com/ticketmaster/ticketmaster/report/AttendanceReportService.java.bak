@@ -5,7 +5,7 @@ import com.ticketmaster.ticketmaster.ticket.TicketStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
+//@Service
 public class AttendanceReportService {
 
     private final TicketRepository ticketRepository;
