@@ -1,7 +1,7 @@
 package com.ticketmaster.ticketmaster.order.service;
 
-import com.ticketmaster.ticketmaster.event.TicketType;
-import com.ticketmaster.ticketmaster.event.TicketTypeRepository;
+import com.ticketmaster.ticketmaster.entity.TicketType;
+import com.ticketmaster.ticketmaster.entity.TicketTypeRepository;
 import com.ticketmaster.ticketmaster.order.dto.OrderItemResponse;
 import com.ticketmaster.ticketmaster.order.dto.OrderResponse;
 import com.ticketmaster.ticketmaster.order.dto.PlaceOrderRequest;
@@ -68,7 +68,7 @@ public class OrderService {
             ticketTypeRepository.save(ticketType);
 
             // 3. Use the REAL price from the database
-            BigDecimal unitPrice = ticketType.getPrice();
+            BigDecimal unitPrice = BigDecimal.valueOf(ticketType.getPrice());
 
             OrderItem orderItem = OrderItem.builder()
                     .order(order)
@@ -84,7 +84,6 @@ public class OrderService {
         }
 
         order.setTotalAmount(totalAmount);
-
         Order savedOrder = orderRepository.save(order);
 
         return mapToResponse(savedOrder);
@@ -152,6 +151,9 @@ public class OrderService {
             
         } else if (newStatus == Order.OrderStatus.FAILED || newStatus == Order.OrderStatus.CANCELLED) {
             order.setStatus(newStatus);
+            
+            // FIX: Force Hibernate to initialize the lazy-loaded collection
+            order.getItems().size(); 
             
             // 4. RELEASE CAPACITY (Give the tickets back)
             for (OrderItem item : order.getItems()) {
