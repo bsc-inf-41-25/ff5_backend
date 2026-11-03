@@ -1,12 +1,11 @@
-
 package com.ticketmaster.ticketmaster.config;
 
 import com.ticketmaster.ticketmaster.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -39,18 +38,37 @@ public class SecurityConfig {
                     "/v3/api-docs/**",
                     "/error"
                 ).permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/events/**", "/api/legacy/events/**").permitAll()
+
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/events/**",
+                    "/api/legacy/events/**"
+                ).permitAll()
+
                 .requestMatchers("/api/orders/**").hasRole("CUSTOMER")
                 .requestMatchers("/api/organizer/**").hasRole("ORGANIZER")
+
                 .requestMatchers("/api/tickets/validate").hasRole("VALIDATOR")
-                .requestMatchers("/api/tickets/*/qr").hasRole("CUSTOMER")
-                .requestMatchers("/api/tickets/my", "/api/tickets/*").hasRole("CUSTOMER")
+
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/api/tickets/*/cancel"
+                ).hasRole("CUSTOMER")
+
+                .requestMatchers(
+                    "/api/tickets/my",
+                    "/api/tickets/*"
+                ).hasRole("CUSTOMER")
+
                 .anyRequest().authenticated()
             )
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authenticationProvider(authenticationProvider())
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(
+                jwtAuthFilter,
+                UsernamePasswordAuthenticationFilter.class
+            );
 
         return http.build();
     }
@@ -69,8 +87,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
-            throws Exception {
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 }
