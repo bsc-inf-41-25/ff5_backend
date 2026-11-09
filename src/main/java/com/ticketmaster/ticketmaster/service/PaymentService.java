@@ -3,9 +3,11 @@ package com.ticketmaster.ticketmaster.service;
 import com.ticketmaster.ticketmaster.dto.CreatePaymentRequest;
 import com.ticketmaster.ticketmaster.entity.Payment;
 import com.ticketmaster.ticketmaster.entity.PaymentStatus;
+import com.ticketmaster.ticketmaster.order.entity.Order;
+import com.ticketmaster.ticketmaster.order.service.OrderService;
 import com.ticketmaster.ticketmaster.repository.PaymentRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientException;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -13,11 +15,11 @@ import java.util.Optional;
 @Service
 public class PaymentService {
     private final PaymentRepository paymentRepository;
-    private final OrderStatusClient orderStatusClient;
+    private final OrderService orderService; // Injecting directly instead of HTTP client
 
-    public PaymentService(PaymentRepository paymentRepository, OrderStatusClient orderStatusClient) {
+    public PaymentService(PaymentRepository paymentRepository, OrderService orderService) {
         this.paymentRepository = paymentRepository;
-        this.orderStatusClient = orderStatusClient;
+        this.orderService = orderService;
     }
 
     public Payment createPayment(CreatePaymentRequest request) {
@@ -29,9 +31,15 @@ public class PaymentService {
         payment = paymentRepository.save(payment);
 
         try {
-            orderStatusClient.updateOrderStatus(payment.getOrderId(), payment.getStatus());
+            // Map the PaymentStatus to the OrderStatus
+            Order.OrderStatus newStatus = payment.getStatus() == PaymentStatus.PAID 
+                    ? Order.OrderStatus.PAID 
+                    : Order.OrderStatus.FAILED;
+            
+            // Direct in-memory method call, no HTTP required!
+            orderService.updateOrderStatus(payment.getOrderId(), newStatus);
             payment.setOrderStatusUpdated(true);
-        } catch (RestClientException exception) {
+        } catch (Exception exception) {
             payment.setOrderStatusUpdated(false);
             payment.setOrderStatusUpdateError(exception.getMessage());
         }
@@ -41,5 +49,10 @@ public class PaymentService {
     public Optional<Payment> getLatestPayment(Long orderId) {
         List<Payment> payments = paymentRepository.findByOrderIdOrderByCreatedAtDesc(orderId);
         return payments.stream().findFirst();
+    }
+
+    public Payment getPaymentByOrderId(Long orderId) {
+        return paymentRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new RuntimeException("Payment not found for order: " + orderId));
     }
 }

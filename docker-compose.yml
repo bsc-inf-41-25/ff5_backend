@@ -33,6 +33,9 @@ services:
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       PAYCHANGU_SECRET_KEY: ${PAYCHANGU_SECRET_KEY}
+      
+      # PayChangu Webhook URL (for completeness)
+      PAYCHANGU_WEBHOOK_URL: http://localhost:8080/api/payments/webhook
     depends_on:
       mariadb:
         condition: service_healthy

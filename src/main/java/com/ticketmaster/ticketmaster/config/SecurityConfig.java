@@ -3,14 +3,15 @@ package com.ticketmaster.ticketmaster.config;
 import com.ticketmaster.ticketmaster.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,7 +39,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .cors(Customizer.withDefaults())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers(
@@ -47,17 +48,26 @@ public class SecurityConfig {
                     "/swagger-ui/**",
                     "/swagger-ui.html",
                     "/v3/api-docs/**",
-                    "/api/payments/**",
-                    "/api/orders/*/status",
-                    "/api/events/**",
-                    "/api/ticket-types/**",
-                    "/api/interests/**",
-                    "/api/customers/**",
-                    "/api/reports/**"
+                    "/uploads/**"
                 ).permitAll()
+                .requestMatchers(HttpMethod.GET,
+                    "/api/events/**",
+                    "/api/events/*/ticket-types",
+                    "/api/ticket-types/**",
+                    "/api/interests"
+                ).permitAll()
+                .requestMatchers(HttpMethod.GET,
+                    "/api/payments/callback",
+                    "/api/payments/return"
+                ).permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/payments/webhook").permitAll()
+                
                 .requestMatchers("/api/orders/**").hasRole("CUSTOMER")
-                .requestMatchers("/api/organizer/**").hasRole("ORGANIZER")
-                .requestMatchers("/api/tickets/validate").hasRole("VALIDATOR")
+                
+                // ADMIN is the only role that can access these now
+                .requestMatchers("/api/organizer/**").hasRole("ADMIN")
+                .requestMatchers("/api/tickets/validate").hasRole("ADMIN")
+                
                 .anyRequest().authenticated()
             )
             .sessionManagement(session ->
@@ -71,9 +81,14 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("*"));
-        configuration.setAllowedMethods(List.of("*"));
-        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowedOriginPatterns(List.of(
+            "http://localhost:[*]",
+            "http://127.0.0.1:[*]"
+        ));
+        configuration.setAllowedMethods(List.of(
+            "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
+        ));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

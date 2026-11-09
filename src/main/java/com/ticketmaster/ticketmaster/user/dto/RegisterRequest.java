@@ -3,7 +3,6 @@ package com.ticketmaster.ticketmaster.user.dto;
 import com.ticketmaster.ticketmaster.user.entity.User;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public class RegisterRequest {
@@ -16,15 +15,17 @@ public class RegisterRequest {
     @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
 
-    @NotNull(message = "Role is required")
-    private User.Role role;
+    // Removed @NotNull. Defaults to CUSTOMER if not provided by the frontend.
+    private User.Role role = User.Role.CUSTOMER;
 
     public RegisterRequest() {}
 
     public RegisterRequest(String email, String password, User.Role role) {
         this.email = email;
         this.password = password;
-        this.role = role;
+        if (role != null) {
+            this.role = role;
+        }
     }
 
     public String getEmail() { return email; }
@@ -32,5 +33,7 @@ public class RegisterRequest {
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
     public User.Role getRole() { return role; }
-    public void setRole(User.Role role) { this.role = role; }
+    public void setRole(User.Role role) { 
+        this.role = (role != null) ? role : User.Role.CUSTOMER; 
+    }
 }

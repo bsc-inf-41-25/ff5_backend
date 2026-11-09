@@ -71,6 +71,7 @@ public class User {
     }
 
     public enum Role {
-        CUSTOMER, ORGANIZER, VALIDATOR
+        CUSTOMER, 
+        ADMIN
     }
 }
